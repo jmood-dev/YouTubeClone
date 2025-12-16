@@ -1,0 +1,30 @@
+body {
+  background-color: #0f0f0f;
+  color: #f1f1f1
+}
+
+#search-field-wrapper {
+  min-width: 500px;
+}
+
+@media screen and (max-width: 480px) {
+  #search-field-wrapper {
+    min-width: auto;
+  }
+}
+
+.badge {
+  cursor: pointer;
+}
+
+/* Replacing btoostrap class styles */
+.bg-body-tertiary {
+  background-color: #0f0f0f !important;
+}
+
+#quota-chart {
+  height: 24px;
+  width: 24px;
+  border: #ddd solid 1px;
+  border-radius: 50%;
+}
