@@ -7,7 +7,7 @@ async function searchYTVideos() {
   
   let cachedData = getFromCache(API_URL)
   if (cachedData) {
-    displayVideos(cachedData.value)
+    displaySearchResults(cachedData.value)
   } else {
     addToQuotaUsage(100) //it uses 100 quota to make a call to the search API
     try {
@@ -15,7 +15,7 @@ async function searchYTVideos() {
       const data = await res.json()
       console.log(data)
       setInCache(API_URL, data, 'search')
-      displayVideos(data)
+      displaySearchResults(data)
       renderSearchBadges()
     } catch(error) {
       console.log(error)
@@ -23,6 +23,49 @@ async function searchYTVideos() {
   }
 
   renderQuota()
+}
+
+function displaySearchResults(data) {
+  const videosList = document.getElementById("videos-list")
+  videosList.replaceChildren()
+
+  data.items.forEach(video => {
+    let searchResult = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
+    searchResult.querySelector(".thumbnail-link").href = "html/video.html?vid=" + video.id.videoId
+    searchResult.querySelector(".thumbnail").src = video.snippet.thumbnails.medium.url
+    searchResult.querySelector(".search-result-title").innerHTML = video.snippet.title
+    searchResult.querySelector(".search-result-title-link").href = "html/video.html?vid=" + video.id.videoId
+    searchResult.querySelector(".search-result-publish-time").innerText = timeAgoString(new Date(video.snippet.publishedAt))
+    searchResult.querySelector(".search-result-publish-time").title = (new Date(video.snippet.publishedAt)).toLocaleString()
+    searchResult.querySelector(".search-result-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
+    searchResult.querySelector(".search-result-channel-name").innerText = video.snippet.channelTitle
+    searchResult.querySelector(".search-result-description").innerText = video.snippet.description
+    videosList.append(searchResult)
+  })
+}
+
+function timeAgoString(date) {
+  let timeElapsed = Date.now() - date.getTime()
+  if (timeElapsed > 1000 * 60 * 60 * 24 * 365.2425) {
+    let count = Math.floor(timeElapsed / (1000 * 60 * 60 * 24 * 365.2425))
+    return count + (count == 1 ? " year ago" : " years ago")
+  } else if (timeElapsed > 1000 * 60 * 60 * 24 * 30.436875) {
+    let count = Math.floor(timeElapsed / (1000 * 60 * 60 * 24 * 30.436875))
+    return count + (count == 1 ? " month ago" : " months ago")
+  } else  if (timeElapsed > 1000 * 60 * 60 * 24) {
+    let count = Math.floor(timeElapsed / (1000 * 60 * 60 * 24))
+    return count + (count == 1 ? " day ago" : " days ago")
+  } else  if (timeElapsed > 1000 * 60 * 60) {
+    let count = Math.floor(timeElapsed / (1000 * 60 * 60))
+    return count + (count == 1 ? " hour ago" : " hours ago")
+  } else  if (timeElapsed > 1000 * 60) {
+    let count = Math.floor(timeElapsed / (1000 * 60))
+    return count + (count == 1 ? " minute ago" : " minutes ago")
+  } else  if (timeElapsed > 1000) {
+    let count = Math.floor(timeElapsed / 1000)
+    return count + (count == 1 ? " second ago" : " seconds ago")
+  }
+  return "Just now"
 }
 
 function displayVideos(data) {

@@ -1,6 +1,6 @@
 body {
   background-color: #0f0f0f;
-  color: #f1f1f1
+  color: #f1f1f1;
 }
 
 #search-field-wrapper {
@@ -28,4 +28,37 @@ body {
   width: 24px;
   border: #ddd solid 1px;
   border-radius: 50%;
+}
+
+.search-result-container {
+  display: flex;
+  gap: 16px;
+  color: #aaaaaa;
+  font-size: 12px;
+  font-family: Roboto, Arial, sans-serif;
+}
+
+.search-result-title-link, .search-result-channel-link {
+  text-decoration: none;
+}
+
+.search-result-title-link {
+  color: #f1f1f1;
+  font-size: 18px;
+}
+
+.search-result-channel {
+  padding: 12px 0;
+}
+
+.search-result-channel-link {
+  color: inherit;
+}
+
+.search-result-channel-link:hover {
+  color: #f1f1f1;
+}
+
+.thumbnail {
+  border-radius: 10px;
 }
