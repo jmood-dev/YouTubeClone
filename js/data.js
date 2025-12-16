@@ -1,5 +1,6 @@
 let defaultData = {
-  quotaUsage: []
+  quotaUsage: [],
+  cache: {}
 }
 
 let appData = {}
@@ -25,6 +26,20 @@ function clearOldQuotaUsage(milliseconds) {
   if (lastIndexToRemove > -1) {
     appData.quotaUsage = appData.quotaUsage.slice(lastIndexToRemove+1)
   }
+  saveData()
+}
+
+function setInCache(key, value, type) {
+  appData.cache[key] = {value, type, time: Date.now()}
+  saveData()
+}
+
+function getFromCache(key) {
+  return appData.cache[key]
+}
+
+function removeFromCache(key) {
+  delete appData.cache[key]
   saveData()
 }
 

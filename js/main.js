@@ -4,17 +4,25 @@ async function searchYTVideos() {
   const API_URL = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&part=snippet&q=${searchText}&type=video&maxResults=25&videoDuration=long`
 
   console.log(API_URL)
-
-  addToQuotaUsage(100) //it uses 100 quota to make a call to the search API
-  renderQuota()
-  try {
-    const res = await fetch(API_URL)
-    const data = await res.json()
-    console.log(data)
-    displayVideos(data)
-  } catch(error) {
-    console.log(error)
+  
+  let cachedData = getFromCache(API_URL)
+  if (cachedData) {
+    displayVideos(cachedData.value)
+  } else {
+    addToQuotaUsage(100) //it uses 100 quota to make a call to the search API
+    try {
+      const res = await fetch(API_URL)
+      const data = await res.json()
+      console.log(data)
+      setInCache(API_URL, data, 'search')
+      displayVideos(data)
+      renderSearchBadges()
+    } catch(error) {
+      console.log(error)
+    }
   }
+
+  renderQuota()
 }
 
 function displayVideos(data) {
@@ -38,23 +46,32 @@ function displayVideos(data) {
   })
 }
 
-const badges = document.getElementsByClassName('badge')
-Array.from(badges).forEach(badge => {
-  badge.addEventListener('click', event => {
+function renderSearchBadges() {
+  let badgeList = document.getElementById('cached-searches-badgess')
+  badgeList.replaceChildren()
+  for (let key in appData.cache) {
+    let cachedItem = getFromCache(key)
+    if (cachedItem.type == "search") {
+      let badge = document.getElementById("badge-template").content.firstElementChild.cloneNode(true)
+      badge.innerText = key.split("&q=")[1].split("&")[0]
 
-    removeActiveSelection()
-    badge.classList.add('text-bg-light')
-    badge.classList.remove('text-bg-dark')
+      badge.onclick = () => {
+        removeActiveSelection(badgeList.children)
+        badge.classList.add('text-bg-light')
+        badge.classList.remove('text-bg-dark')
 
-    console.log(badge.innerText)
-    document.getElementById('search-text').value = badge.innerText
+        console.log(badge.innerText)
+        document.getElementById('search-text').value = badge.innerText
 
-    //searchYTVideos()
-  })
-  
-})
+        searchYTVideos()
+      }
 
-function removeActiveSelection() {
+      badgeList.append(badge)
+    }
+  }
+}
+
+function removeActiveSelection(badges) {
   Array.from(badges).forEach(badge => {
     badge.classList.remove('text-bg-light')
     badge.classList.add('text-bg-dark')
@@ -76,3 +93,4 @@ function renderQuota() {
 
 loadData()
 renderQuota()
+renderSearchBadges()
