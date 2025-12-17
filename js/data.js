@@ -1,6 +1,7 @@
 let defaultData = {
   quotaUsage: [],
-  cache: {}
+  cache: {},
+  videos: {}
 }
 
 let appData = {}

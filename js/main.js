@@ -133,7 +133,60 @@ function renderQuota() {
   document.getElementById('quota-chart').title = `Quota used: ${quotaUsed} of 10000`
 }
 
+function initVideoPage() {
+  renderVideoPage()
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      console.log(entry)
+      let videoIframe = entry.target
+      let newHeight = entry.contentRect.width * 9 / 16
+      if (Math.abs(videoIframe.height - newHeight) > 1) {
+        videoIframe.height = newHeight
+      }
+    }
+  })
+  resizeObserver.observe(document.getElementById('main-video'))
+}
 
-loadData()
-renderQuota()
-renderSearchBadges()
+function renderVideoPage() {
+  let videoId = (new URLSearchParams(window.location.search)).get('vid')
+  document.getElementById('main-video').src = "https://www.youtube.com/embed/" + videoId
+
+  let allVideos = []
+  for (let key in appData.cache) {
+    if (appData.cache[key].type == 'search') {
+      appData.cache[key].value.items.forEach(e => allVideos.push(e))
+    }
+  }
+
+  let video = allVideos.find(v => v.id.videoId == videoId)
+
+  document.getElementById("main-video-title").innerHTML = video.snippet.title
+  document.getElementById("main-video-publish-time").innerText = timeAgoString(new Date(video.snippet.publishedAt))
+  document.getElementById("main-video-publish-time").title = (new Date(video.snippet.publishedAt)).toLocaleString()
+  document.getElementById("main-video-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
+  document.getElementById("main-video-channel-name").innerText = video.snippet.channelTitle
+  document.getElementById("main-video-description").innerText = video.snippet.description
+
+  let sidebarVideos = []
+  while (sidebarVideos.length < 25 && allVideos.length > 0) {
+    sidebarVideos.push(allVideos.splice(Math.floor(Math.random() * allVideos.length), 1)[0])
+  }
+
+  const videosList = document.getElementById("sidebar")
+  videosList.replaceChildren()
+
+  sidebarVideos.forEach(video => {
+    let searchResult = document.getElementById("search-result-sidebar-template").content.firstElementChild.cloneNode(true)
+    searchResult.querySelector(".thumbnail-link").href = "video.html?vid=" + video.id.videoId
+    searchResult.querySelector(".thumbnail").src = video.snippet.thumbnails.medium.url
+    searchResult.querySelector(".search-result-title").innerHTML = video.snippet.title
+    searchResult.querySelector(".search-result-title-link").href = "video.html?vid=" + video.id.videoId
+    searchResult.querySelector(".search-result-publish-time").innerText = timeAgoString(new Date(video.snippet.publishedAt))
+    searchResult.querySelector(".search-result-publish-time").title = (new Date(video.snippet.publishedAt)).toLocaleString()
+    searchResult.querySelector(".search-result-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
+    searchResult.querySelector(".search-result-channel-name").innerText = video.snippet.channelTitle
+    videosList.append(searchResult)
+  })
+}
+

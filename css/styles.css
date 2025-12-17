@@ -38,7 +38,7 @@ body {
   font-family: Roboto, Arial, sans-serif;
 }
 
-.search-result-title-link, .search-result-channel-link {
+.search-result-title-link, .search-result-channel-link, #main-video-channel-link {
   text-decoration: none;
 }
 
@@ -61,4 +61,47 @@ body {
 
 .thumbnail {
   border-radius: 10px;
+}
+
+.main-video-info {
+  color: #f1f1f1;
+  font-size: 14px;
+  font-family: Roboto, Arial, sans-serif;
+}
+
+#main-video-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#main-video-channel-link {
+  color: #f1f1f1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+#main-video-desciption-container {
+  background-color: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+#sidebar .search-result-container {
+  gap: 8px;
+}
+
+#sidebar .search-result-title-link {
+  color: #f1f1f1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#sidebar .thumbnail {
+  height: 94px;
+  width: 168px;
+}
+
+#sidebar .search-result-channel {
+  padding: 0;
 }
