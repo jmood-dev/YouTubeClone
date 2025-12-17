@@ -29,7 +29,7 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <div class="input-group" id="search-field-wrapper">
             <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-addon2" id="search-text">
-            <button class="btn btn-outline-secondary" type="button" id="button-addon2" title="Quota cost: 100" onclick="searchYTVideos()">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" title="Quota cost: 100" onclick="searchFromInput()">
               <i class="fa-solid fa-magnifying-glass"></i>
             </button>
           </div>
@@ -93,6 +93,7 @@
     loadData()
     renderQuota()
     renderSearchBadges()
+    searchYTVideos()
   </script>
   
 </body>

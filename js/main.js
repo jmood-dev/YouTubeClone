@@ -1,6 +1,27 @@
+function searchFromInput() {
+  const searchText = document.getElementById('search-text').value
+  search(searchText)
+}
+
+function search(searchText) {
+  if (searchText) {
+    let newUrl = "/index.html?q=" + encodeURIComponent(searchText)
+    if (!window.location.href.split("?")[0].includes("index.html")) {
+      window.location.href = newUrl
+    } else {
+      window.history.replaceState(null, null, newUrl)
+      searchYTVideos()
+    }
+  }
+}
+
 async function searchYTVideos() {
 
-  const searchText = document.getElementById('search-text').value
+  const searchText = (new URLSearchParams(window.location.search)).get('q')
+  if (!searchText) {
+    return
+  }
+
   const API_URL = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&part=snippet&q=${searchText}&type=video&maxResults=25&videoDuration=long`
 
   console.log(API_URL)
@@ -8,6 +29,7 @@ async function searchYTVideos() {
   let cachedData = getFromCache(API_URL)
   if (cachedData) {
     displaySearchResults(cachedData.value)
+    renderSearchBadges(searchText)
   } else {
     addToQuotaUsage(100) //it uses 100 quota to make a call to the search API
     try {
@@ -16,7 +38,7 @@ async function searchYTVideos() {
       console.log(data)
       setInCache(API_URL, data, 'search')
       displaySearchResults(data)
-      renderSearchBadges()
+      renderSearchBadges(searchText)
     } catch(error) {
       console.log(error)
     }
@@ -89,7 +111,7 @@ function displayVideos(data) {
   })
 }
 
-function renderSearchBadges() {
+function renderSearchBadges(searchText) {
   let badgeList = document.getElementById('cached-searches-badgess')
   badgeList.replaceChildren()
   for (let key in appData.cache) {
@@ -98,15 +120,10 @@ function renderSearchBadges() {
       let badge = document.getElementById("badge-template").content.firstElementChild.cloneNode(true)
       badge.innerText = key.split("&q=")[1].split("&")[0]
 
-      badge.onclick = () => {
-        removeActiveSelection(badgeList.children)
+      badge.onclick = () => search(badge.innerText)
+      if (searchText == badge.innerText) {
         badge.classList.add('text-bg-light')
         badge.classList.remove('text-bg-dark')
-
-        console.log(badge.innerText)
-        document.getElementById('search-text').value = badge.innerText
-
-        searchYTVideos()
       }
 
       badgeList.append(badge)
