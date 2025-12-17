@@ -51,13 +51,23 @@
       </div>
       <div class="main-video-info">
         <div id="main-video-title"></div>
-        <div>
-          <a href="" id="main-video-channel-link">
-            <span id="main-video-channel-name"></span>
-          </a>
+        <div style="display: flex;">
+          <div style="flex-grow: 1;">
+            <a href="" id="main-video-channel-link">
+              <span id="main-video-channel-name"></span>
+            </a>
+          </div>
+          <div id="main-video-like-container">
+            <i class="fa-regular fa-thumbs-up"></i>
+            <span id="main-video-like-count"></span>
+          </div>
         </div>
         <div id="main-video-desciption-container">
-          <div id="main-video-publish-time"></div>
+          <div id="main-video-stats-container">
+            <span id="main-video-views"></span>
+            <span id="main-video-publish-time"></span>
+          </div>
+          
           <div id="main-video-description"></div>
         </div>
       </div>

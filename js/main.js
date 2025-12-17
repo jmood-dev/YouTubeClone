@@ -111,6 +111,20 @@ function displayVideos(data) {
   })
 }
 
+function formatLargeNumber(num) {
+  const NUM_ABBREVIATIONS = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Udc', 'Ddc', 'Tdc', 'Qadc', 'Qidc', 'Sxdc', 'Spdc', 'Ocdc', 'Nmdc', 'Vg', 'Uvg', 'Dvg', 'Tvg', 'Qavg', 'Qivg', 'Sxvg', 'Spvg', 'Ovg', 'Nvg', 'Tg', 'Utg']
+  let numLog = Math.floor(Math.log10(num))
+  if (numLog < 3) {
+    return Math.floor(num)
+  } else if (numLog % 3 == 0) {
+    return (Math.floor(num/(Math.pow(10, numLog-1)))/10).toFixed(1) + NUM_ABBREVIATIONS[Math.floor(numLog/3)]
+  } else if (numLog % 3 == 1) {
+    return Math.floor(num/(Math.pow(10, numLog-1))) + NUM_ABBREVIATIONS[Math.floor(numLog/3)]
+  } else if (numLog % 3 == 2) {
+    return Math.floor(num/(Math.pow(10, numLog-2))) + NUM_ABBREVIATIONS[Math.floor(numLog/3)]
+  }
+}
+
 function renderSearchBadges(searchText) {
   let badgeList = document.getElementById('cached-searches-badgess')
   badgeList.replaceChildren()
@@ -176,14 +190,16 @@ function renderVideoPage() {
     }
   }
 
-  let video = allVideos.find(v => v.id.videoId == videoId)
-
-  document.getElementById("main-video-title").innerHTML = video.snippet.title
-  document.getElementById("main-video-publish-time").innerText = timeAgoString(new Date(video.snippet.publishedAt))
-  document.getElementById("main-video-publish-time").title = (new Date(video.snippet.publishedAt)).toLocaleString()
-  document.getElementById("main-video-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
-  document.getElementById("main-video-channel-name").innerText = video.snippet.channelTitle
-  document.getElementById("main-video-description").innerText = video.snippet.description
+  getVideo(videoId, (video) => {
+    document.getElementById("main-video-title").innerHTML = video.snippet.title
+    document.getElementById("main-video-publish-time").innerText = timeAgoString(new Date(video.snippet.publishedAt))
+    document.getElementById("main-video-publish-time").title = (new Date(video.snippet.publishedAt)).toLocaleString()
+    document.getElementById("main-video-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
+    document.getElementById("main-video-channel-name").innerText = video.snippet.channelTitle
+    document.getElementById("main-video-description").innerText = video.snippet.description
+    document.getElementById("main-video-views").innerText = formatLargeNumber(video.statistics.viewCount) + " views"
+    document.getElementById("main-video-like-count").innerText = formatLargeNumber(video.statistics.likeCount)
+  })
 
   let sidebarVideos = []
   while (sidebarVideos.length < 25 && allVideos.length > 0) {
@@ -205,5 +221,36 @@ function renderVideoPage() {
     searchResult.querySelector(".search-result-channel-name").innerText = video.snippet.channelTitle
     videosList.append(searchResult)
   })
+}
+
+async function getVideo(id, callback) {
+  let video = appData.videos[id]
+  if (!video) {
+    const VIDEO_API_URL = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&part=snippet%2CcontentDetails%2Cstatistics&id=${id}`
+    let cachedItem = getFromCache(VIDEO_API_URL)
+    if (cachedItem) {
+      video = cachedItem.value.items[0]
+      appData.videos[id] = video
+      saveData()
+    } else {
+      addToQuotaUsage(1) //it uses 1 quota to make a call to the video API
+      try {
+        const res = await fetch(VIDEO_API_URL)
+        const data = await res.json()
+        console.log(data)
+        video = data
+        appData.videos[id] = data.items[0]
+        setInCache(VIDEO_API_URL, data, 'video')
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  }
+
+  if (callback) {
+    callback(video)
+  }
+
+  return video
 }
 
