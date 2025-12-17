@@ -195,10 +195,15 @@ function renderVideoPage() {
     document.getElementById("main-video-publish-time").innerText = timeAgoString(new Date(video.snippet.publishedAt))
     document.getElementById("main-video-publish-time").title = (new Date(video.snippet.publishedAt)).toLocaleString()
     document.getElementById("main-video-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
+    document.getElementById("main-video-channel-link-thumbnail").href = "https://www.youtube.com/channel/" + video.snippet.channelId
     document.getElementById("main-video-channel-name").innerText = video.snippet.channelTitle
     document.getElementById("main-video-description").innerText = video.snippet.description
     document.getElementById("main-video-views").innerText = formatLargeNumber(video.statistics.viewCount) + " views"
     document.getElementById("main-video-like-count").innerText = formatLargeNumber(video.statistics.likeCount)
+    getChannel(video.snippet.channelId, (channel) => {
+      document.getElementById("main-video-channel-thumbnail").src = channel.snippet.thumbnails.default.url
+      document.getElementById("main-video-channel-subscriber-count").innerText = formatLargeNumber(channel.statistics.subscriberCount) + " subscribers"
+    })
   })
 
   let sidebarVideos = []
@@ -238,7 +243,7 @@ async function getVideo(id, callback) {
         const res = await fetch(VIDEO_API_URL)
         const data = await res.json()
         console.log(data)
-        video = data
+        video = data.items[0]
         appData.videos[id] = data.items[0]
         setInCache(VIDEO_API_URL, data, 'video')
       } catch(error) {
@@ -254,3 +259,33 @@ async function getVideo(id, callback) {
   return video
 }
 
+async function getChannel(id, callback) {
+  let channel = appData.channels[id]
+  if (!channel) {
+    const CHANNEL_API_URL = `https://www.googleapis.com/youtube/v3/channels?key=${API_KEY}&part=snippet%2CcontentDetails%2Cstatistics&id=${id}`
+    let cachedItem = getFromCache(CHANNEL_API_URL)
+    if (cachedItem) {
+      channel = cachedItem.value.items[0]
+      appData.channels[id] = channel
+      saveData()
+    } else {
+      addToQuotaUsage(1) //it uses 1 quota to make a call to the channel API
+      try {
+        const res = await fetch(CHANNEL_API_URL)
+        const data = await res.json()
+        console.log(data)
+        channel = data.items[0]
+        appData.channels[id] = data.items[0]
+        setInCache(CHANNEL_API_URL, data, 'channel')
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  }
+
+  if (callback) {
+    callback(channel)
+  }
+
+  return channel
+}

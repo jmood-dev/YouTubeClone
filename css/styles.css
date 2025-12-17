@@ -74,10 +74,19 @@ body {
   font-weight: bold;
 }
 
+#main-video-channel-thumbnail {
+  border-radius: 50%;
+}
+
 #main-video-channel-link {
   color: #f1f1f1;
   font-size: 16px;
   font-weight: 500;
+}
+
+#main-video-channel-subscriber-count {
+  font-size: 12px;
+  color: #aaaaaa;
 }
 
 #main-video-desciption-container {
@@ -99,6 +108,12 @@ body {
   background-color: rgba(255,255,255,0.1);
   border-radius: 18px;
   padding: 4px 8px;
+  font-weight: 500;
+  font-size: 22px;
+}
+
+#main-video-like-count {
+  font-size: 14px;
 }
 
 #sidebar .search-result-container {
