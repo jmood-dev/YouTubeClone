@@ -65,6 +65,7 @@ function displaySearchResults(data) {
     videosList.append(searchResult)
     getVideo(video.id.videoId, (video) => {
       searchResult.querySelector(".search-result-views").innerText = formatLargeNumber(video.statistics.viewCount) + " views"
+      searchResult.querySelector(".duration-overlay").innerText = formatDuration(video.contentDetails.duration)
     })
     getChannel(video.snippet.channelId, (channel) => {
       searchResult.querySelector(".search-result-channel-thumbnail").src = channel.snippet.thumbnails.default.url
@@ -137,6 +138,36 @@ function formatWithCommas(num) {
     maximumFractionDigits: 0
   };
   return Number(num).toLocaleString('en-US', options);
+}
+
+function formatDuration(duration) {
+  let hours = "0"
+  let minutes = "0"
+  let seconds = "0"
+  let nextNum = ""
+  for (let i = 0; i < duration.length; i++) {
+    if (duration[i] >= "0" && duration[i] <= "9") {
+      nextNum += duration[i]
+    } else if (duration[i] == "H") {
+      hours = nextNum
+      nextNum = ""
+    } else if (duration[i] == "M") {
+      minutes = nextNum
+      nextNum = ""
+    } else if (duration[i] == "S") {
+      seconds = nextNum
+      nextNum = ""
+    }
+  }
+
+  let returnString = ""
+  if (Number(hours) == 0) {
+    returnString = minutes + ":" + (Number(seconds) < 10 ? "0" : "") + seconds
+  } else {
+    returnString = hours + ":" + (Number(minutes) < 10 ? "0" : "") + minutes + ":" + (Number(seconds) < 10 ? "0" : "") + seconds
+  }
+
+  return returnString
 }
 
 function renderSearchBadges(searchText) {
@@ -257,6 +288,7 @@ function renderVideoPage() {
     videosList.append(searchResult)
     getVideo(video.id.videoId, (video) => {
       searchResult.querySelector(".search-result-views").innerText = formatLargeNumber(video.statistics.viewCount) + " views"
+      searchResult.querySelector(".duration-overlay").innerText = formatDuration(video.contentDetails.duration)
     })
   })
 }

@@ -38,6 +38,23 @@ body {
   font-family: Roboto, Arial, sans-serif;
 }
 
+.duration-overlay {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sidebar-duration-overlay {
+  right: 4px;
+  bottom: 4px;
+}
+
 .search-result-title-link, .search-result-channel-link, #main-video-channel-link, .commenter-link {
   text-decoration: none;
 }
