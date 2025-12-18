@@ -38,7 +38,7 @@ body {
   font-family: Roboto, Arial, sans-serif;
 }
 
-.search-result-title-link, .search-result-channel-link, #main-video-channel-link {
+.search-result-title-link, .search-result-channel-link, #main-video-channel-link, .commenter-link {
   text-decoration: none;
 }
 
@@ -114,6 +114,58 @@ body {
 
 #main-video-like-count {
   font-size: 14px;
+}
+
+#main-video-comments-container {
+  margin-top: 60px;
+}
+
+#main-video-comment-count {
+  font-size: 20px;
+  font-weight: bold;
+  color: #f1f1f1;
+}
+
+.comment-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.commenter-thumbnail {
+  border-radius: 50%;
+  margin-top: 8px;
+}
+
+.commenter-display-name {
+  font-size: 13px;
+  color: #f1f1f1;
+  font-weight: 500;
+}
+
+.comment-publish-time {
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+.comment-text {
+  font-size: 14px;
+}
+
+.comment-text a {
+  color: #3ea6ff;
+  text-decoration: none;
+}
+
+.comment-like-container {
+  margin-top: 12px;
+}
+
+.comment-like-count {
+  color: #aaaaaa;
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
 }
 
 #sidebar .search-result-container {

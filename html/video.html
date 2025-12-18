@@ -75,25 +75,47 @@
             <span id="main-video-views"></span>
             <span id="main-video-publish-time"></span>
           </div>
-          
           <div id="main-video-description"></div>
         </div>
       </div>
+      <div id="main-video-comments-container">
+        <div id="main-video-comment-count"></div>
+      </div>
+      <div id="main-video-comment-list"></div>
     </div>
 
     <div id="sidebar" style="width: 400px;"></div>
     
   </div>
 
-  <template id="badge-template">
-    <span class="badge text-bg-dark fs-6 fw-medium"></span> 
+  <template id="comment-template">
+    <div class="comment-container">
+      <div>
+        <a class="commenter-thumbnail-link" href="">
+          <img class="commenter-thumbnail" src="" width="40" height="40">
+        </a>
+      </div>
+      <div style="flex-grow: 1;">
+        <div>
+          <a href="" class="commenter-link">
+            <span class="commenter-display-name"></span>
+          </a>
+          <span class="comment-publish-time"></span>
+        </div>
+        <div class="comment-text"></div>
+        <div class="comment-like-container">
+          <i class="fa-regular fa-thumbs-up"></i>
+          <span class="comment-like-count"></span>
+        </div>
+      </div>
+    </div>
   </template>
 
   <template id="search-result-sidebar-template">
       <div class="search-result-container m-2">
         <div>
           <a class="thumbnail-link" href="">
-            <img class="thumbnail" src="" alt="">
+            <img class="thumbnail" src="">
           </a>
         </div>
         <div style="flex-grow: 1;">

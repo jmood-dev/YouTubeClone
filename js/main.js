@@ -125,6 +125,14 @@ function formatLargeNumber(num) {
   }
 }
 
+function formatWithCommas(num) {
+  const options = {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  };
+  return Number(num).toLocaleString('en-US', options);
+}
+
 function renderSearchBadges(searchText) {
   let badgeList = document.getElementById('cached-searches-badgess')
   badgeList.replaceChildren()
@@ -203,6 +211,22 @@ function renderVideoPage() {
     getChannel(video.snippet.channelId, (channel) => {
       document.getElementById("main-video-channel-thumbnail").src = channel.snippet.thumbnails.default.url
       document.getElementById("main-video-channel-subscriber-count").innerText = formatLargeNumber(channel.statistics.subscriberCount) + " subscribers"
+    })
+    getCommentThreads(videoId, (commentThreads) => {
+      document.getElementById('main-video-comment-count').innerText = formatWithCommas(video.statistics.commentCount) + " Comments"
+      let commentList = document.getElementById('main-video-comment-list')
+      for (let commentThread of video.commentThreads) {
+        let commentDiv = document.getElementById("comment-template").content.firstElementChild.cloneNode(true)
+        commentDiv.querySelector(".commenter-thumbnail-link").href = commentThread.snippet.topLevelComment.snippet.authorChannelUrl
+        commentDiv.querySelector(".commenter-thumbnail").src = commentThread.snippet.topLevelComment.snippet.authorProfileImageUrl
+        commentDiv.querySelector(".commenter-link").href = commentThread.snippet.topLevelComment.snippet.authorChannelUrl
+        commentDiv.querySelector(".commenter-display-name").innerText = commentThread.snippet.topLevelComment.snippet.authorDisplayName
+        commentDiv.querySelector(".comment-publish-time").innerText = timeAgoString(new Date(commentThread.snippet.topLevelComment.snippet.publishedAt))
+        commentDiv.querySelector(".comment-publish-time").title = (new Date(commentThread.snippet.topLevelComment.snippet.publishedAt)).toLocaleString()
+        commentDiv.querySelector(".comment-text").innerHTML = commentThread.snippet.topLevelComment.snippet.textDisplay
+        commentDiv.querySelector(".comment-like-count").innerText = formatLargeNumber(commentThread.snippet.topLevelComment.snippet.likeCount)
+        commentList.append(commentDiv)
+      }
     })
   })
 
@@ -288,4 +312,35 @@ async function getChannel(id, callback) {
   }
 
   return channel
+}
+
+async function getCommentThreads(videoId, callback) {
+  let commentThreads = appData.videos[videoId].commentThreads
+  if (!commentThreads) {
+    const COMMENT_THREADS_API_URL = `https://www.googleapis.com/youtube/v3/commentThreads?key=${API_KEY}&part=snippet%2Creplies&videoId=${videoId}`
+    let cachedItem = getFromCache(COMMENT_THREADS_API_URL)
+    if (cachedItem) {
+      commentThreads = cachedItem.value.items
+      appData.video[videoId].commentThreads = commentThreads
+      saveData()
+    } else {
+      addToQuotaUsage(1) //it uses 1 quota to make a call to the comment threads API
+      try {
+        const res = await fetch(COMMENT_THREADS_API_URL)
+        const data = await res.json()
+        console.log(data)
+        commentThreads = data.items
+        appData.videos[videoId].commentThreads = data.items
+        setInCache(COMMENT_THREADS_API_URL, data, 'commentThreads')
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  }
+
+  if (callback) {
+    callback(commentThreads)
+  }
+
+  return commentThreads
 }
