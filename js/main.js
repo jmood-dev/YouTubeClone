@@ -5,11 +5,12 @@ function searchFromInput() {
 
 function search(searchText) {
   if (searchText) {
-    let newUrl = "/index.html?q=" + encodeURIComponent(searchText)
+    const urlParams = new URLSearchParams(window.location.search)
+    urlParams.set("q", searchText)
     if (!window.location.href.split("?")[0].includes("index.html")) {
-      window.location.href = newUrl
+      window.location.href = "/index.html?" + urlParams
     } else {
-      window.history.replaceState(null, null, newUrl)
+      window.history.replaceState(null, null, "/index.html?" + urlParams)
       searchYTVideos()
     }
   }
@@ -17,27 +18,68 @@ function search(searchText) {
 
 async function searchYTVideos() {
 
-  const searchText = (new URLSearchParams(window.location.search)).get('q')
+  const urlParams = new URLSearchParams(window.location.search)
+  const searchText = urlParams.get('q')
   if (!searchText) {
     return
   }
 
-  const API_URL = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&part=snippet&q=${searchText}&type=video&maxResults=25&videoDuration=long`
+  addToBadgeSearchTexts(searchText)
 
-  console.log(API_URL)
+  let durParam = urlParams.get("dur")
+  let pubParam = urlParams.get("pub")
+
+  let pubAfter = ""
+  if (pubParam) {
+    if (pubParam == "hour") {
+      pubAfter = (new Date(Date.now() - 1000*60*60)).toISOString()
+    } else if (pubParam == "today") {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      pubAfter = today.toISOString()
+    } else if (pubParam == "week") {
+      const date = new Date()
+      date.setDate(date.getDate() - date.getDay())
+      date.setHours(0, 0, 0, 0)
+      pubAfter = date.toISOString()
+    } else if (pubParam == "month") {
+      const today = new Date();
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+      pubAfter = startOfMonth.toISOString()
+    } else if (pubParam == "year") {
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1)
+      pubAfter = startOfYear.toISOString()
+    }
+  }
+
+  let urlFilterParams = ""
+  if (durParam && pubParam) {
+    urlFilterParams = `&videoDuration=${durParam}&publishedAfter=${pubAfter}`
+  } else if (durParam) {
+    urlFilterParams = `&videoDuration=${durParam}`
+  } else if (pubParam) {
+    urlFilterParams = `&publishedAfter=${pubAfter}`
+  }
+
+  const SEARCH_API_URL = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&part=snippet&q=${searchText}&type=video&maxResults=25${urlFilterParams}`
+
+  console.log(SEARCH_API_URL)
   
-  let cachedData = getFromCache(API_URL)
+  let cachedData = getFromCache(SEARCH_API_URL)
   if (cachedData) {
     displaySearchResults(cachedData.value)
+    appData.currentSearchResultData = cachedData.value
     renderSearchBadges(searchText)
   } else {
     addToQuotaUsage(100) //it uses 100 quota to make a call to the search API
     try {
-      const res = await fetch(API_URL)
+      const res = await fetch(SEARCH_API_URL)
       const data = await res.json()
       console.log(data)
-      setInCache(API_URL, data, 'search')
+      setInCache(SEARCH_API_URL, data, 'search')
       displaySearchResults(data)
+      appData.currentSearchResultData = data
       renderSearchBadges(searchText)
     } catch(error) {
       console.log(error)
@@ -48,10 +90,29 @@ async function searchYTVideos() {
 }
 
 function displaySearchResults(data) {
+  let sorted = data.items
+  if (appData.sortToApply.includes("date")) {
+    sorted = data.items.toSorted((a, b) => {
+      return (new Date(b.snippet.publishedAt)).getTime() - (new Date(a.snippet.publishedAt)).getTime()
+    })
+  } else if (appData.sortToApply.includes("title")) {
+    sorted = data.items.toSorted((a, b) => {
+      return a.snippet.title.localeCompare(b.snippet.title)
+    })
+  } else if (appData.sortToApply.includes("views")) {
+    sorted = data.items.toSorted((a, b) => {
+      return appData.videos[b.id.videoId].statistics.viewCount - appData.videos[a.id.videoId].statistics.viewCount
+    })
+  } else if (appData.sortToApply.includes("likes")) {
+    sorted = data.items.toSorted((a, b) => {
+      return appData.videos[b.id.videoId].statistics.likeCount - appData.videos[a.id.videoId].statistics.likeCount
+    })
+  }
+
   const videosList = document.getElementById("videos-list")
   videosList.replaceChildren()
 
-  data.items.forEach(video => {
+  sorted.forEach(video => {
     let searchResult = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
     searchResult.querySelector(".thumbnail-link").href = "html/video.html?vid=" + video.id.videoId
     searchResult.querySelector(".thumbnail").src = video.snippet.thumbnails.medium.url
@@ -95,27 +156,6 @@ function timeAgoString(date) {
     return count + (count == 1 ? " second ago" : " seconds ago")
   }
   return "Just now"
-}
-
-function displayVideos(data) {
-  const videosList = document.getElementById("videos-list")
-  videosList.innerHTML = ''
-
-  data.items.forEach( video => {
-    const colDiv = document.createElement('div')
-    colDiv.classList.add("col-xl-4", "col-lg-6", "col-md-12", "text-center")
-
-    const iframe = document.createElement('iframe')
-    iframe.width = 400
-    iframe.height = 225
-    const { videoId } = video.id
-    iframe.src = `https://www.youtube.com/embed/${videoId}`
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    iframe.setAttribute('allowfullscreen', 'true')
-
-    colDiv.append(iframe)
-    videosList.append(colDiv)
-  })
 }
 
 function formatLargeNumber(num) {
@@ -173,20 +213,16 @@ function formatDuration(duration) {
 function renderSearchBadges(searchText) {
   let badgeList = document.getElementById('cached-searches-badgess')
   badgeList.replaceChildren()
-  for (let key in appData.cache) {
-    let cachedItem = getFromCache(key)
-    if (cachedItem.type == "search") {
-      let badge = document.getElementById("badge-template").content.firstElementChild.cloneNode(true)
-      badge.innerText = key.split("&q=")[1].split("&")[0]
 
-      badge.onclick = () => search(badge.innerText)
-      if (searchText == badge.innerText) {
-        badge.classList.add('text-bg-light')
-        badge.classList.remove('text-bg-dark')
-      }
-
-      badgeList.append(badge)
+  for (let badgeText of appData.badgeSearchTexts) {
+    let badge = document.getElementById("badge-template").content.firstElementChild.cloneNode(true)
+    badge.innerText = badgeText
+    badge.onclick = () => search(badge.innerText)
+    if (searchText == badge.innerText) {
+      badge.classList.add('text-bg-light')
+      badge.classList.remove('text-bg-dark')
     }
+    badgeList.append(badge)
   }
 }
 
@@ -195,6 +231,19 @@ function removeActiveSelection(badges) {
     badge.classList.remove('text-bg-light')
     badge.classList.add('text-bg-dark')
   })
+}
+
+function addToBadgeSearchTexts(searchText) {
+  if (!appData.badgeSearchTexts) {
+    appData.badgeSearchTexts = []
+  }
+
+  let index = appData.badgeSearchTexts.findIndex(e => e == searchText)
+  if (index > -1) {
+    appData.badgeSearchTexts.splice(index, 1)
+  }
+  appData.badgeSearchTexts.unshift(searchText)
+  saveData()
 }
 
 function renderQuota() {
@@ -207,6 +256,27 @@ function renderQuota() {
   let color = degrees < 180 ? 'green' : degrees < 270 ? 'yellow' : 'red'
   document.getElementById('quota-chart').style.backgroundImage = `conic-gradient(${color} 0deg, ${color} ${degrees}deg, transparent ${degrees}deg, transparent 360deg)`
   document.getElementById('quota-chart').title = `Quota used: ${quotaUsed} of 10000`
+}
+
+function initHomePage() {
+  appData.currentSearchResultData = {items: []}
+  appData.sortToApply = ""
+
+  const urlParams = new URLSearchParams(window.location.search)
+  let durParam = urlParams.get("dur")
+  let pubParam = urlParams.get("pub")
+
+  let elementsToSelect = []
+  if (durParam) {
+    elementsToSelect.push(document.querySelector(".guide-item-" + durParam))
+  }
+  if (pubParam) {
+    elementsToSelect.push(document.querySelector(".guide-item-" + pubParam))
+  }
+
+  for (let element of elementsToSelect) {
+    selectGuideItem(element)
+  }
 }
 
 function initVideoPage() {
@@ -291,6 +361,97 @@ function renderVideoPage() {
       searchResult.querySelector(".duration-overlay").innerText = formatDuration(video.contentDetails.duration)
     })
   })
+}
+
+function guideClick(target, action) {
+  let selectClicked = true
+  if (action == "home") {
+    clearGuideSelections(document.getElementById("guide-container"))
+
+    document.getElementById("videos-list").replaceChildren()
+    renderSearchBadges("")
+    window.history.replaceState(null, null, "/index.html")
+    appData.currentSearchResultData = {items: []}
+  } else if (action.includes("sort")) {
+    clearGuideSelections(document.getElementById("guide-section-home"))
+    clearGuideSelections(document.getElementById("guide-section-sort"))
+
+    if (action.includes("relevance")) {
+      appData.sortToApply = ""
+    } else if (action.includes("date")) {
+      appData.sortToApply = "date"
+    } else if (action.includes("title")) {
+      appData.sortToApply = "title"
+    } else if (action.includes("views")) {
+      appData.sortToApply = "views"
+    } else if (action.includes("likes")) {
+      appData.sortToApply = "likes"
+    }
+
+    displaySearchResults(appData.currentSearchResultData)
+  } else if (action.includes("publish")) {
+    clearGuideSelections(document.getElementById("guide-section-home"))
+    clearGuideSelections(document.getElementById("guide-section-publish-filter"))
+
+    const urlParams = new URLSearchParams(window.location.search)
+    if (action.includes("hour") && urlParams.get("pub") == "hour" || action.includes("today") && urlParams.get("pub") == "today" || 
+          action.includes("week") && urlParams.get("pub") == "week" || action.includes("month") && urlParams.get("pub") == "month" ||  
+          action.includes("year") && urlParams.get("pub") == "year") {
+      urlParams.delete("pub")
+      selectClicked = false
+    } else if (action.includes("hour")) {
+      urlParams.set("pub", "hour")
+    } else if (action.includes("today")) {
+      urlParams.set("pub", "today")
+    } else if (action.includes("week")) {
+      urlParams.set("pub", "week")
+    } else if (action.includes("month")) {
+      urlParams.set("pub", "month")
+    } else if (action.includes("year")) {
+      urlParams.set("pub", "year")
+    }
+    window.history.replaceState(null, null, "/index.html?" + urlParams)
+    searchYTVideos()
+  } else if (action.includes("duration")) {
+    clearGuideSelections(document.getElementById("guide-section-home"))
+    clearGuideSelections(document.getElementById("guide-section-duration-filter"))
+
+    const urlParams = new URLSearchParams(window.location.search)
+    if (action.includes("long") && urlParams.get("dur") == "long" || action.includes("medium") && urlParams.get("dur") == "medium"
+                || action.includes("short") && urlParams.get("dur") == "short" ) {
+      urlParams.delete("dur")
+      selectClicked = false
+    } else if (action.includes("long")) {
+      urlParams.set("dur", "long")
+    } else if (action.includes("medium")) {
+      urlParams.set("dur", "medium")
+    } else if (action.includes("short")) {
+      urlParams.set("dur", "short")
+    }
+    window.history.replaceState(null, null, "/index.html?" + urlParams)
+    searchYTVideos()
+  }
+
+  if (selectClicked) {
+    selectGuideItem(target)
+  }
+}
+
+function clearGuideSelections(element) {
+  let guideItems = element.querySelectorAll(".guide-item")
+  for (let guideItem of guideItems) {
+    guideItem.classList.remove("selected")
+    let iElement = guideItem.querySelector("i")
+    iElement.classList.add(iElement.dataset.classStandard)
+    iElement.classList.remove(iElement.dataset.classSelected)
+  }
+}
+
+function selectGuideItem(element) {
+  element.classList.add("selected")
+  let iElement = element.querySelector("i")
+  iElement.classList.remove(iElement.dataset.classStandard)
+  iElement.classList.add(iElement.dataset.classSelected)
 }
 
 async function getVideo(id, callback) {

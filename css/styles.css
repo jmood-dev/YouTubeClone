@@ -30,6 +30,66 @@ body {
   border-radius: 50%;
 }
 
+.guide-container {
+  min-width: 210px;
+}
+
+.guide-section {
+  padding: 12px 0;
+}
+
+.guide-section+.guide-section {
+  border-top: rgba(255,255,255,0.2) 1px solid;
+}
+
+.guide-item {
+  display: flex;
+  margin-left: 12px;
+  padding: 4px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 10px;
+}
+
+.guide-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.guide-item {
+  display: flex;
+  margin-left: 12px;
+  padding: 4px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 10px;
+}
+
+.guide-item.selected {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.guide-item.selected:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.guide-icon {
+  font-size: 24px;
+  margin-right: 24px;
+}
+
+.guide-text {
+  flex-grow: 1;
+  padding-top: 8px;
+}
+
+.guide-section-header {
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 32px;
+}
+
 .search-result-container {
   display: flex;
   gap: 16px;
@@ -40,8 +100,8 @@ body {
 
 .duration-overlay {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
+  right: 8px;
+  bottom: 8px;
   color: #fff;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 4px;

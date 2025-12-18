@@ -29,7 +29,7 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <div class="input-group" id="search-field-wrapper">
             <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-addon2" id="search-text">
-            <button class="btn btn-outline-secondary" type="button" id="button-addon2" title="Quota cost: 100" onclick="searchFromInput()">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" title="Quota cost: up to 150" onclick="searchFromInput()">
               <i class="fa-solid fa-magnifying-glass"></i>
             </button>
           </div>
@@ -43,16 +43,113 @@
     </div>
   </nav>
 
-  <div class="container">
-
-      <div id="cached-searches-badgess" class="text-center"></div>
-
-    <div class="row mt-3" id="videos-list">
+  <div style="display: flex; gap: 12px">
+    <div id="guide-container" class="guide-container">
+      <div id="guide-section-home" class="guide-section">
+        <div class="guide-item" onclick="guideClick(this, 'home')">
+          <div class="guide-icon">
+            <i class="fa-regular fa-house" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Home</div>
+        </div>
+      </div>
+      <div id="guide-section-sort" class="guide-section">
+        <div class="guide-section-header">Sort By</div>
+        <div class="guide-item" onclick="guideClick(this, 'sort-relevance')">
+          <div class="guide-icon">
+            <i class="fa-regular fa-lightbulb" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Relevance</div>
+        </div>
+        <div class="guide-item" onclick="guideClick(this, 'sort-date')">
+          <div class="guide-icon">
+            <i class="fa-regular fa-calendar" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Date</div>
+        </div>
+        <div class="guide-item" onclick="guideClick(this, 'sort-title')">
+          <div class="guide-icon">
+            <i class="fa-solid fa-arrow-down-a-z"></i>
+          </div>
+          <div class="guide-text">Title</div>
+        </div>
+        <div class="guide-item" onclick="guideClick(this, 'sort-views')">
+          <div class="guide-icon">
+            <i class="fa-regular fa-eye" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Views</div>
+        </div>
+        <div class="guide-item" onclick="guideClick(this, 'sort-likes')">
+          <div class="guide-icon">
+            <i class="fa-regular fa-thumbs-up" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Likes</div>
+        </div>
+      </div>
+      <div id="guide-section-publish-filter" class="guide-section">
+        <div class="guide-section-header">Publish Date Filter</div>
+        <div class="guide-item guide-item-hour" onclick="guideClick(this, 'filter-publish-hour')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-regular fa-hourglass" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Last hour</div>
+        </div>
+        <div class="guide-item guide-item-today" onclick="guideClick(this, 'filter-publish-today')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-regular fa-calendar" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Today</div>
+        </div>
+        <div class="guide-item guide-item-week" onclick="guideClick(this, 'filter-publish-week')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-solid fa-calendar-week"></i>
+          </div>
+          <div class="guide-text">This week</div>
+        </div>
+        <div class="guide-item guide-item-month" onclick="guideClick(this, 'filter-publish-month')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-regular fa-calendar-days" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">This month</div>
+        </div>
+        <div class="guide-item guide-item-year" onclick="guideClick(this, 'filter-publish-year')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-regular fa-calendar" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">This year</div>
+        </div>
+      </div>
+      <div id="guide-section-duration-filter" class="guide-section">
+        <div class="guide-section-header">Duration Filter</div>
+        <div class="guide-item guide-item-short" onclick="guideClick(this, 'filter-duration-short')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-regular fa-alarm-clock" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">Under 4 minutes</div>
+        </div>
+        <div class="guide-item guide-item-medium" onclick="guideClick(this, 'filter-duration-medium')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-regular fa-clock" data-class-standard="fa-regular" data-class-selected="fa-solid"></i>
+          </div>
+          <div class="guide-text">4 - 20 minutes</div>
+        </div>
+        <div class="guide-item guide-item-long" onclick="guideClick(this, 'filter-duration-long')" title="Quota cost: up to 150">
+          <div class="guide-icon">
+            <i class="fa-solid fa-stopwatch-20"></i>
+          </div>
+          <div class="guide-text">Over 20 minutes</div>
+        </div>
+      </div>
+    </div>
+    <div style="flex-grow: 1;">
+      <div id="cached-searches-badgess"></div>
+      <div class="row mt-3" id="videos-list">
+    </div>
     </div>
   </div>
 
   <template id="badge-template">
-    <span class="badge text-bg-dark fs-6 fw-medium"></span> 
+    <span class="badge text-bg-dark fs-6 fw-medium" title="Quota cost: up to 150"></span> 
   </template>
 
   <template id="search-result-template">
@@ -95,6 +192,7 @@
 
   <script>
     loadData()
+    initHomePage()
     renderQuota()
     renderSearchBadges()
     searchYTVideos()
