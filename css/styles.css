@@ -51,6 +51,11 @@ body {
   padding: 12px 0;
 }
 
+.search-result-channel-thumbnail {
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
 .search-result-channel-link {
   color: inherit;
 }

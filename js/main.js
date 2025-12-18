@@ -63,6 +63,12 @@ function displaySearchResults(data) {
     searchResult.querySelector(".search-result-channel-name").innerText = video.snippet.channelTitle
     searchResult.querySelector(".search-result-description").innerText = video.snippet.description
     videosList.append(searchResult)
+    getVideo(video.id.videoId, (video) => {
+      searchResult.querySelector(".search-result-views").innerText = formatLargeNumber(video.statistics.viewCount) + " views"
+    })
+    getChannel(video.snippet.channelId, (channel) => {
+      searchResult.querySelector(".search-result-channel-thumbnail").src = channel.snippet.thumbnails.default.url
+    })
   })
 }
 
@@ -249,6 +255,9 @@ function renderVideoPage() {
     searchResult.querySelector(".search-result-channel-link").href = "https://www.youtube.com/channel/" + video.snippet.channelId
     searchResult.querySelector(".search-result-channel-name").innerText = video.snippet.channelTitle
     videosList.append(searchResult)
+    getVideo(video.id.videoId, (video) => {
+      searchResult.querySelector(".search-result-views").innerText = formatLargeNumber(video.statistics.viewCount) + " views"
+    })
   })
 }
 
