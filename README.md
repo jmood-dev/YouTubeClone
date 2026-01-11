@@ -1,1 +1,1 @@
-Note: if you want to use this code, be sure to add a secret.js file with your YouTube API key assigned to a const named API_KEY
+Note: if you want to use this code, be sure to add a secret.js file at js/secret.js with your YouTube API key assigned to a const named API_KEY
